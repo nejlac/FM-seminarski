@@ -1,0 +1,21 @@
+{
+  "name": "goodreads-selenium-tests",
+  "version": "1.0.0",
+  "description": "Automatizovani testovi za Goodreads - Grupa 4",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "mocha --timeout 30000 --exit"
+  },
+  "keywords": ["selenium", "mocha", "testing", "goodreads"],
+  "author": "IB210058, IB210005, IB210083",
+  "license": "ISC",
+  "dependencies": {
+    "chai": "^5.1.2",
+    "mocha": "^11.0.1",
+    "selenium-webdriver": "^4.27.0"
+  },
+  "directories": {
+    "test": "test"
+  }
+}
