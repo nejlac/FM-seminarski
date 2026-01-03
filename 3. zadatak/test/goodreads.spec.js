@@ -137,31 +137,29 @@ it("Test 2: Uređivanje profila - Promjena grada u Sarajevo", async function () 
     expect(true).to.be.true;
   });
 
-it("Test 7: Brisanje ratinga knjige", async function () {
-  await performLogin(driver);
-  await driver.get("https://www.goodreads.com/book/show/43641.Water_for_Elephants");
-  await driver.sleep(5000);
+  it("Test 7: Brisanje ratinga knjige", async function () {
+    await performLogin(driver);
 
+    // Open EDIT REVIEW page for Water for Elephants
+    await driver.get("https://www.goodreads.com/review/edit/43641");
+    await driver.sleep(4000);
 
-  let star3 = await driver.wait(
-    until.elementLocated(By.css("button[aria-label*='3']")),
-    15000
-  );
-  await driver.executeScript("arguments[0].click();", star3);
-  await driver.sleep(3000);
+    // Click CLEAR rating
+    let clearBtn = await driver.wait(
+      until.elementLocated(By.css(".clearRating")),
+      15000
+    );
+    await driver.executeScript("arguments[0].click();", clearBtn);
+    await driver.sleep(2000);
 
+    // Confirm rating reset (no stars marked 'on')
+    let activeStars = await driver.findElements(
+      By.css(".stars a.on")
+    );
 
-  let activeStars = await driver.findElements(
-    By.css("button[aria-checked='true']")
-  );
-
-  expect(activeStars.length).to.equal(0);
-  console.log("✓ Rating je uspješno obrisan (resetovan)");
-});
-
-
-
-
+    expect(activeStars.length).to.equal(0);
+    console.log("✓ Rating uspješno obrisan!");
+  });
 
   it("Test 8: Hunger Games - Rating, Review sa spoilerom i POST", async function () {
     await performLogin(driver);
@@ -207,7 +205,7 @@ it("Test 7: Brisanje ratinga knjige", async function () {
     console.log("✓ Review sa ocjenom i spoilerom je uspješno objavljen!");
   });
 
-it("Test 9: Detaljan review - Unos dugog teksta (DRAFT provjera)", async function () {
+  it("Test 9: Detaljan review - Unos dugog teksta (DRAFT provjera)", async function () {
     await performLogin(driver);
     await driver.get("https://www.goodreads.com/review/edit/43641");
     await driver.sleep(5000);
@@ -230,10 +228,96 @@ it("Test 9: Detaljan review - Unos dugog teksta (DRAFT provjera)", async functio
     console.log("✓ Detaljan tekst unesen i potvrđen u polju (dužina: " + textareaValue.length + ")");
   });
 
-  it("Test 10: Logout", async function () {
+  it("Test 10: Brisanje prve knjige sa liste ‘My Books’", async function () {
     await performLogin(driver);
-    await driver.get("https://www.goodreads.com/user/sign_out");
+
+    await driver.get("https://www.goodreads.com/review/list");
+    await driver.sleep(4000);
+
+    let firstDelete = await driver.wait(
+      until.elementLocated(By.css("a.deleteLink")),
+      15000
+    );
+
+    await driver.executeScript("arguments[0].click();", firstDelete);
+
+    await driver.wait(until.alertIsPresent(), 5000);
+
     await driver.sleep(3000);
-    expect(await driver.getCurrentUrl()).to.not.include("user/show");
+
+    let alert = await driver.switchTo().alert();
+    await alert.accept();
+
+    await driver.sleep(4000);
+
+    console.log("✓ Prva knjiga uspješno obrisana sa liste!");
   });
-});
+
+  it("Test 11: Brisanje druge knjige sa liste ‘My Books’", async function () {
+    await performLogin(driver);
+
+    await driver.get("https://www.goodreads.com/review/list");
+    await driver.sleep(4000);
+
+    let deleteBtn = await driver.wait(
+      until.elementLocated(By.css("a.deleteLink")),
+      15000
+    );
+
+    await driver.executeScript("arguments[0].click();", deleteBtn);
+
+    await driver.wait(until.alertIsPresent(), 5000);
+
+    await driver.sleep(3000);
+
+    let alert = await driver.switchTo().alert();
+    await alert.accept();
+
+    await driver.sleep(4000);
+
+    console.log("✓ Druga knjiga uspješno obrisana sa liste!");
+  });
+
+  it("Test 12: Brisanje korisničke police 'favorit'", async function () {
+
+    await performLogin(driver);
+
+    await driver.get("https://www.goodreads.com/shelf/edit");
+
+    await driver.wait(
+      until.elementLocated(By.id("shelfTable")),
+      10000
+    );
+
+    const deleteBtn = await driver.wait(
+      until.elementLocated(
+        By.xpath("//tr[.//a[text()='favorit']]//a[@title='delete this shelf']")
+      ),
+      10000
+    );
+
+    await driver.executeScript("arguments[0].click();", deleteBtn);
+
+    await driver.wait(until.alertIsPresent(), 5000);
+
+    await driver.sleep(3000);
+
+    const alert = await driver.switchTo().alert();
+    await alert.accept();
+
+    await driver.sleep(3000);
+
+    const stillThere = await driver.findElements(
+      By.xpath("//a[text()='favorit']")
+    );
+
+    expect(stillThere.length).to.equal(0);
+  });
+
+  it("Test 13: Logout", async function () {
+      await performLogin(driver);
+      await driver.get("https://www.goodreads.com/user/sign_out");
+      await driver.sleep(3000);
+      expect(await driver.getCurrentUrl()).to.not.include("user/show");
+    });
+  });
